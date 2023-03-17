@@ -7,7 +7,12 @@ from spyne.server.wsgi import WsgiApplication
 
 from BaseCurrencies import BaseCurrencies
 
-
+class CurrencyConverterService(ServiceBase):
+    @rpc(Unicode(default='default value'), _returns=Iterable(Unicode))
+    def getCurrencyCodes(ctx, input):
+        baseCurrencies = BaseCurrencies()
+        currencyCodes = baseCurrencies.getCurrencyRateDictionary().keys()
+        return list(currencyCodes)
 
 
 application = Application([CurrencyConverterService], 'currencyconverter.ac.at.fhcampuswien',
