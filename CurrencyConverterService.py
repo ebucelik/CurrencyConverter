@@ -1,37 +1,20 @@
 #!/usr/bin/env python
 
-from spyne import Application, rpc, ServiceBase, Iterable, Integer, Unicode
-
-from spyne.protocol.soap import Soap11
-from spyne.server.wsgi import WsgiApplication
+from interface import implements
 
 from BaseCurrencies import BaseCurrencies
-
-class CurrencyConverterService(ServiceBase):
-    @rpc(Unicode(default='default value'), _returns=Iterable(Unicode))
-    def getCurrencyCodes(ctx, input):
-        baseCurrencies = BaseCurrencies()
-        currencyCodes = baseCurrencies.getCurrencyRateDictionary().keys()
-        return list(currencyCodes)
+from Converter import Converter
+from Interfaces import CurrencyConverterServiceInterface
 
 
-application = Application([CurrencyConverterService], 'currencyconverter.ac.at.fhcampuswien',
-                          in_protocol=Soap11(validator='lxml'),
-                          out_protocol=Soap11())
+class CurrencyConverterService(implements(CurrencyConverterServiceInterface)):
 
-wsgi_application = WsgiApplication(application)
+    def getCurrencyCodes(self):
+        base_currencies = BaseCurrencies()
+        currency_codes = base_currencies.getCurrencyRateDictionary().keys()
+        return list(currency_codes)
 
-
-if __name__ == '__main__':
-    import logging
-
-    from wsgiref.simple_server import make_server
-
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('spyne.protocol.xml').setLevel(logging.DEBUG)
-
-    logging.info("listening to http://127.0.0.1:8000")
-    logging.info("wsdl is at: http://localhost:8000/?wsdl")
-
-    server = make_server('127.0.0.1', 8000, wsgi_application)
-    server.serve_forever()
+    def getConvertedValue(self, current_value, current_currency_code, expected_currency_code):
+        converter = Converter()
+        rate = converter.getConvertedValue(current_value, current_currency_code, expected_currency_code)
+        return rate
