@@ -15,6 +15,12 @@ class ConverterInterface(Interface):
     def getCurrencyValue(self, currency_code):
         pass
 
+    def currencyIsValid(self, currency_code):
+        pass
+
+    def valueIsValid(self, current_value):
+        pass
+
 
 class CurrencyConverterServiceInterface(Interface):
     def getCurrencyCodes(self):

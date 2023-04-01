@@ -6,6 +6,7 @@ from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
 
 from CurrencyConverterService import CurrencyConverterService
+from InvalidInputError import InvalidInputError
 
 
 class CurrencyConverterWebService(ServiceBase):
@@ -16,9 +17,19 @@ class CurrencyConverterWebService(ServiceBase):
     def getCurrencyCodes(ctx, input):
         return ctx.descriptor.service_class.service.getCurrencyCodes()
 
-    @rpc(Float(default = 1), Unicode(default = 'EUR'), Unicode(default = 'USD'), _returns = float)
-    def getConvertedValue(ctx, current_value, current_currency_code, expected_currency_code):
-        return ctx.descriptor.service_class.service.getConvertedValue(current_value, current_currency_code, expected_currency_code)
+    @rpc(Float(default=1), Unicode(default='EUR'), Unicode(default='USD'), _returns=float, _throws=InvalidInputError)
+    def getConvertedValue(ctx,
+                          current_value,
+                          current_currency_code,
+                          expected_currency_code):
+        try:
+            return ctx.descriptor.service_class.service.getConvertedValue(
+                current_value,
+                current_currency_code,
+                expected_currency_code
+            )
+        except ValueError as value_error:
+            raise InvalidInputError(value_error.args[0])
 
 
 application = Application([CurrencyConverterWebService], 'currencyconverter.ac.at.fhcampuswien',
