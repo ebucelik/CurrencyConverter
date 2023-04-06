@@ -26,6 +26,6 @@ class CurrencyConverterServiceInterface(Interface):
     def getCurrencyCodes(self):
         pass
 
-    def getConvertedValue(self, current_value, current_currency_code, expected_currency_code):
+    def getConvertedValue(self, current_value, current_currency_code, expected_currency_code, token):
         pass
 

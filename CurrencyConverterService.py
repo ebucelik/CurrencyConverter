@@ -5,6 +5,7 @@ from interface import implements
 from BaseCurrencies import BaseCurrencies
 from Converter import Converter
 from Interfaces import CurrencyConverterServiceInterface
+from Authentication import authenticate, AuthenticationError
 
 
 class CurrencyConverterService(implements(CurrencyConverterServiceInterface)):
@@ -14,7 +15,7 @@ class CurrencyConverterService(implements(CurrencyConverterServiceInterface)):
         currency_codes = base_currencies.getCurrencyRateDictionary().keys()
         return list(currency_codes)
 
-    def getConvertedValue(self, current_value, current_currency_code, expected_currency_code):
+    def getConvertedValue(self, current_value, current_currency_code, expected_currency_code, token):
         converter = Converter()
         rate = converter.getConvertedValue(current_value, current_currency_code, expected_currency_code)
         return rate
