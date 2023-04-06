@@ -1,53 +1,47 @@
 #!/usr/bin/env python
 
-from spyne import Application, rpc, ServiceBase, Iterable, Unicode, Float, srpc
-from spyne.interface.xml_schema.defn import Element
-
+from spyne import Application, rpc, ServiceBase, Iterable, Unicode, Float
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
-from spyne.model.primitive import UnsignedInteger32
 
-import Authentication
+from Authentication import authenticate, AuthenticationError
 from CurrencyConverterService import CurrencyConverterService
 from InvalidInputError import InvalidInputError
-from Authentication import check_authentication, authenticate, AuthenticationError
+from RequestHeader import RequestHeader
 
 
 class CurrencyConverterWebService(ServiceBase):
 
     service = CurrencyConverterService()
+    __in_header__ = RequestHeader
 
     @rpc(Unicode, _returns=Iterable(Unicode))
-    #@check_authentication
-    def getCurrencyCodes(ctx, token):
+    def getCurrencyCodes(ctx, input):
         try:
-            authenticate(token)
+            authenticate(ctx.in_header.authentication)
             return ctx.descriptor.service_class.service.getCurrencyCodes()
         except AuthenticationError as authentication_error:
             raise AuthenticationError(authentication_error.args[0])
 
-    @rpc(Float(default=1), Unicode(default='EUR'), Unicode(default='USD'), Unicode,
-          _returns=float,
-          _throws=InvalidInputError)
+    @rpc(Float(default=1), Unicode(default='EUR'), Unicode(default='USD'),
+         _returns=float,
+         _throws=InvalidInputError)
     def getConvertedValue(ctx,
                           current_value,
                           current_currency_code,
-                          expected_currency_code,
-                          token):
+                          expected_currency_code):
         try:
-            authenticate(token)
+            authenticate(ctx.in_header.authentication)
             try:
                 return ctx.descriptor.service_class.service.getConvertedValue(
                     current_value,
                     current_currency_code,
-                    expected_currency_code,
-                    token
+                    expected_currency_code
                 )
             except ValueError as value_error:
                 raise InvalidInputError(value_error.args[0])
         except AuthenticationError as authentication_error:
             raise AuthenticationError(authentication_error.args[0])
-
 
 
 application = Application([CurrencyConverterWebService], 'currencyconverter.ac.at.fhcampuswien',
